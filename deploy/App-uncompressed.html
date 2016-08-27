@@ -47,13 +47,26 @@ Ext.define('IterationRetroApp', {
                 types: ['Iteration', 'AttributeDefinition'],
                 success: function(models) {
                     this.models = models;
-                    this._checkForFields();
+                    this._loadIteration();
                 },
                 scope: this
             });
         } else {
-            this._checkForFields();
+            this._loadIteration();
         }
+    },
+
+    _loadIteration: function() {
+        var id = this.getContext().getTimeboxScope().getRecord().getId();
+        this.models.Iteration.load(id, {
+            fetch: REQUIRED_FIELDS
+        }).then({
+            success: function(iteration) {
+                this.iteration = iteration;
+                this._checkForFields();
+            },
+            scope: this
+        });
     },
 
     _checkForFields: function() {
@@ -105,17 +118,9 @@ Ext.define('IterationRetroApp', {
                             cls: 'plus-panel',
                             title: '+',
                             titleAlign: 'center',
-                            border: false,
                             flex: 1,
                             minWidth: 550,
-                            items: [
-                                {
-                                    xtype: 'rallyrichtexteditor',
-                                    itemId: 'pluses',
-                                    margin: '0 10px',
-                                    height: 350
-                                }
-                            ],
+                            items: [ this._buildEditorFor('c_RetroPluses') ]
                         },
                         {
                             xtype: 'panel',
@@ -124,16 +129,7 @@ Ext.define('IterationRetroApp', {
                             titleAlign: 'center',
                             flex: 1,
                             minWidth: 550,
-                            border: false,
-                            items: [
-                                {
-                                    xtype: 'rallyrichtexteditor',
-                                    itemId: 'deltas',
-                                    resizable: false,
-                                    margin: '0 10px',
-                                    height: 350
-                                }
-                            ]
+                            items: [ this._buildEditorFor('c_RetroDeltas') ]
                         }
                    ]
                 },
@@ -143,17 +139,25 @@ Ext.define('IterationRetroApp', {
                     title: 'Action Items',
                     titleAlign: 'center',
                     flex: 1,
-                    items: [
-                        {
-                            xtype: 'rallyrichtexteditor',
-                            itemId: 'actionItems',
-                            margin: '0 10px',
-                            height: 400
-                        }
-                    ]
+                    items: [ this._buildEditorFor('c_RetroActions') ]
                 }
             ]);
         }
+    },
+
+    _buildEditorFor: function(fieldName) {
+        return {
+            xtype: 'rallyrichtexteditor',
+            itemId: fieldName.replace('c_R', 'r'),
+            fieldName: fieldName,
+            margin: '0 10px',
+            height: 300,
+            value: this.iteration.get(fieldName),
+            listeners: {
+                blur: this._onEditorChange,
+                scope: this
+            }
+        };
     },
 
     _fieldExists: function(name) {
@@ -205,6 +209,21 @@ Ext.define('IterationRetroApp', {
                 this.models.Iteration = model;
                 this.setLoading(false);
                 this.onScopeChange();
+            },
+            scope: this
+        });
+    },
+
+    _onEditorChange: function(editor) {
+        this.iteration.set(editor.fieldName, editor.getValue());
+        this.iteration.save({
+            fetch: REQUIRED_FIELDS
+        }).then({
+            success: function(iteration) {
+                this.iteration = iteration;
+                Ext.create('Rally.ui.detail.view.SavedIndicator', {
+                    target: editor
+                });
             },
             scope: this
         });
