@@ -7,18 +7,152 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                Ext.define('CustomApp', {
-    extend: 'Rally.app.App',
-    componentCls: 'app',
-    launch: function() {
-        //Write app code here
+                var REQUIRED_FIELDS = [
+  'Retro Pluses',
+  'Retro Deltas',
+  'Retro Actions'
+];
 
-        //API Docs: https://help.rallydev.com/apps/2.1/doc/
+Ext.define('IterationRetroApp', {
+    extend: 'Rally.app.TimeboxScopedApp',
+    componentCls: 'app',
+    scopeType: 'iteration',
+    supportsUnscheduled: false,
+
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
+
+    items: [
+        {
+            xtype: 'container',
+            cls: 'header'
+        },
+        {
+            xtype: 'container',
+            itemId: 'content',
+            flex: 1
+        }
+    ],
+
+    onScopeChange: function() {
+        this.callParent(arguments);
+
+        if (!this.models) {
+            Rally.data.wsapi.ModelFactory.getModels({
+                context: this.getContext(),
+                types: ['Iteration', 'AttributeDefinition'],
+                success: function(models) {
+                    this.models = models;
+                    this._checkForFields();
+                },
+                scope: this
+            });
+        } else {
+            this._checkForFields();
+        }
+    },
+
+    _checkForFields: function() {
+        this.down('#content').removeAll();
+        if (!_.every(REQUIRED_FIELDS, this._fieldExists, this)) {
+            var isWorkspaceAdmin = this.getContext().getPermissions().isWorkspaceOrSubscriptionAdmin(this.getContext().getWorkspace());
+            this.down('#content').add({
+                itemId: 'missingFieldsBlankSlate',
+                xtype: 'container',
+                cls: 'no-data-container',
+                items: [
+                    {
+                        xtype: 'component',
+                        cls: 'primary-message',
+                        html: 'One or more required Iteration custom fields are missing.'
+                    },
+                    {
+                        xtype: 'component',
+                        cls: 'secondary-message',
+                        html: 'This app uses custom fields on Iteration to store retro pluses, deltas and action items.'
+                    },
+                    {
+                        xtype: 'component',
+                        cls: 'secondary-message',
+                        html: isWorkspaceAdmin ?
+                          'Click <a href="#" class="create-fields-link">here</a> to create these fields.' :
+                          'Please contact a workspace administrator to set up these fields using this app.',
+                        listeners: {
+                            afterrender: function(cmp) {
+                                var linkEl = cmp.getEl().down('.create-fields-link');
+                                this.mon(linkEl, 'click', this._createRequiredFields, this);
+                            },
+                            scope: this
+                        }
+                    }
+                ]
+            });
+        } else {
+            this.add({
+                xtype: 'rallyrichtexteditor'
+            });
+        }
+    },
+
+    _fieldExists: function(name) {
+        return !!_.find(this.models.Iteration.getFields(), function(field) {
+            return field.isCustom() && field.getType() === 'text' && field.displayName === name;
+        });
+    },
+
+    _createRequiredFields: function(e) {
+        e.preventDefault();
+        this.setLoading({msg: 'Creating fields...'});
+
+        Deft.Promise.all(_.compact(_.map(REQUIRED_FIELDS, function(field) {
+            if (!this._fieldExists(field)) {
+                return this._createRequiredField(field);
+            }
+        }, this))).then({
+            success: this._requiredFieldsCreated,
+            scope: this
+        });
+    },
+
+    _createRequiredField: function(name) {
+        //hack to make required fields persistable
+        _.each(['RealAttributeType', 'Constrained', 'TypeDefinition'], function(fieldName) {
+            this.models.AttributeDefinition.getField(fieldName).persist = true;
+        }, this);
+        //end hack
+
+        var newField = Ext.create(this.models.AttributeDefinition, {
+            RealAttributeType: 'TEXT',
+            Constrained: false,
+            Custom: true,
+            Filterable: true,
+            Sortable: false,
+            Name: name,
+            TypeDefinition: Rally.util.Ref.getRelativeUri(this.models.Iteration.typeDefinition)
+        });
+        return newField.save();
+    },
+
+    _requiredFieldsCreated: function() {
+        Rally.data.wsapi.ModelFactory.clearModels();
+        Rally.data.wsapi.ModelFactory.getModel({
+            context: this.getContext(),
+            type: 'Iteration'
+        }).then({
+            success: function(model) {
+                this.models.Iteration = model;
+                this.setLoading(false);
+                this.onScopeChange();
+            },
+            scope: this
+        });
     }
 });
 
 
-            Rally.launchApp('CustomApp', {
+            Rally.launchApp('IterationRetroApp', {
                 name:"Iteration Retrospective",
 	            parentRepos:""
             });

@@ -1,10 +1,10 @@
 {
     "name": "Iteration Retrospective",
-    "className": "CustomApp",
+    "className": "IterationRetroApp",
     "server": "https://rally1.rallydev.com",
     "sdk": "2.1",
     "javascript": [
-        "App.js"
+        "IterationRetroApp.js"
     ],
     "css": [
         "app.css"
