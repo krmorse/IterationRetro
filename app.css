@@ -16,17 +16,11 @@
 }
 
 .plus-panel {
-  /*border-right: 1px solid #ccc;*/
   padding-bottom: 20px;
 }
 
 .delta-panel {
-  /*border-left: 1px solid #ccc;*/
   padding-bottom: 20px;
-}
-
-.actions-panel {
-  /*border-top: 2px solid #ccc;*/
 }
 
 .plus-panel .x-panel-header-text-container-default {
@@ -40,4 +34,13 @@
 .actions-panel .x-panel-header-text-container-default {
   font-size: 36px;
   text-transform: none;
+}
+
+.rallyRichTextEditor.pre-save {
+  transition: border-color 2s;
+}
+
+.rallyRichTextEditor.pre-save.is-saving {
+  transition: border-color 0s;
+  border-color: #8DC63F;
 }

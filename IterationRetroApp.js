@@ -1,13 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Iteration Retrospective</title>
-
-    <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
-
-    <script type="text/javascript">
-        Rally.onReady(function () {
-                var REQUIRED_FIELDS = {
+var REQUIRED_FIELDS = {
     c_RetroPluses: 'Retro Pluses',
     c_RetroDeltas: 'Retro Deltas',
     c_RetroActions: 'Retro Actions'
@@ -227,58 +218,3 @@ Ext.define('IterationRetroApp', {
         });
     }
 });
-
-
-            Rally.launchApp('IterationRetroApp', {
-                name:"Iteration Retrospective",
-	            parentRepos:""
-            });
-
-        });
-    </script>
-
-
-
-    <style type="text/css">
-        .app {
-  /* Add app styles here */
-}
-.x-panel-body {
-  border: none;
-}
-.x-panel-header-default {
-  box-shadow: none;
-}
-.x-panel-header-text-container-default {
-  line-height: 48px;
-  color: #ccc;
-}
-.plus-panel {
-  padding-bottom: 20px;
-}
-.delta-panel {
-  padding-bottom: 20px;
-}
-.plus-panel .x-panel-header-text-container-default {
-  font-size: 72px;
-}
-.delta-panel .x-panel-header-text-container-default {
-  font-size: 48px;
-}
-.actions-panel .x-panel-header-text-container-default {
-  font-size: 36px;
-  text-transform: none;
-}
-.rallyRichTextEditor.pre-save {
-  transition: border-color 2s;
-}
-.rallyRichTextEditor.pre-save.is-saving {
-  transition: border-color 0s;
-  border-color: #8DC63F;
-}
-
-    </style>
-</head>
-<body>
-</body>
-</html>
