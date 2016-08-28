@@ -10,22 +10,12 @@ Ext.define('IterationRetroApp', {
     scopeType: 'iteration',
     supportsUnscheduled: false,
 
-    layout: {
-        type: 'vbox',
-        align: 'stretch'
-    },
-
     initComponent: function() {
         this.callParent(arguments);
 
         this.add({
             xtype: 'container',
-            itemId: 'content',
-            flex: 1,
-            layout: {
-                type: 'vbox',
-                align: 'stretch'
-            }
+            itemId: 'content'
         });
     },
 
@@ -99,37 +89,27 @@ Ext.define('IterationRetroApp', {
         } else {
             contentContainer.add([
                 {
-                    xtype: 'container',
-                    layout: {
-                        type: 'hbox'
-                    },
-                    items: [
-                        {
-                            xtype: 'panel',
-                            cls: 'plus-panel',
-                            title: '+',
-                            titleAlign: 'center',
-                            flex: 1,
-                            minWidth: 550,
-                            items: [ this._buildEditorFor('c_RetroPluses') ]
-                        },
-                        {
-                            xtype: 'panel',
-                            cls: 'delta-panel',
-                            title: 'Δ',
-                            titleAlign: 'center',
-                            flex: 1,
-                            minWidth: 550,
-                            items: [ this._buildEditorFor('c_RetroDeltas') ]
-                        }
-                   ]
+                    xtype: 'panel',
+                    cls: 'plus-panel',
+                    title: '+',
+                    titleAlign: 'center',
+                    minWidth: 550,
+                    items: [ this._buildEditorFor('c_RetroPluses') ]
+                },
+                {
+                    xtype: 'panel',
+                    cls: 'delta-panel',
+                    title: 'Δ',
+                    titleAlign: 'center',
+                    minWidth: 550,
+                    items: [ this._buildEditorFor('c_RetroDeltas') ]
                 },
                 {
                     xtype: 'panel',
                     cls: 'actions-panel',
                     title: 'Action Items',
                     titleAlign: 'center',
-                    flex: 1,
+                    minWidth: 550,
                     items: [ this._buildEditorFor('c_RetroActions') ]
                 }
             ]);
@@ -143,7 +123,7 @@ Ext.define('IterationRetroApp', {
             fieldName: fieldName,
             showUndoButton: true,
             margin: '0 10px',
-            height: 300,
+            height: 200,
             value: this.iteration.get(fieldName),
             listeners: {
                 blur: this._onEditorChange,
