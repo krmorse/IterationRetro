@@ -7,11 +7,11 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                var REQUIRED_FIELDS = [
-  'Retro Pluses',
-  'Retro Deltas',
-  'Retro Actions'
-];
+                var REQUIRED_FIELDS = {
+    c_RetroPluses: 'Retro Pluses',
+    c_RetroDeltas: 'Retro Deltas',
+    c_RetroActions: 'Retro Actions'
+};
 
 Ext.define('IterationRetroApp', {
     extend: 'Rally.app.TimeboxScopedApp',
@@ -59,7 +59,7 @@ Ext.define('IterationRetroApp', {
     _loadIteration: function() {
         var id = this.getContext().getTimeboxScope().getRecord().getId();
         this.models.Iteration.load(id, {
-            fetch: REQUIRED_FIELDS
+            fetch: _.keys(REQUIRED_FIELDS)
         }).then({
             success: function(iteration) {
                 this.iteration = iteration;
@@ -72,7 +72,7 @@ Ext.define('IterationRetroApp', {
     _checkForFields: function() {
         var contentContainer = this.down('#content');
         contentContainer.removeAll();
-        if (!_.every(REQUIRED_FIELDS, this._fieldExists, this)) {
+        if (!_.every(_.keys(REQUIRED_FIELDS), this._fieldExists, this)) {
             var isWorkspaceAdmin = this.getContext().getPermissions().isWorkspaceOrSubscriptionAdmin(this.getContext().getWorkspace());
             contentContainer.add({
                 itemId: 'missingFieldsBlankSlate',
@@ -150,6 +150,7 @@ Ext.define('IterationRetroApp', {
             xtype: 'rallyrichtexteditor',
             itemId: fieldName.replace('c_R', 'r'),
             fieldName: fieldName,
+            showUndoButton: true,
             margin: '0 10px',
             height: 300,
             value: this.iteration.get(fieldName),
@@ -162,7 +163,7 @@ Ext.define('IterationRetroApp', {
 
     _fieldExists: function(name) {
         return !!_.find(this.models.Iteration.getFields(), function(field) {
-            return field.isCustom() && field.getType() === 'text' && field.displayName === name;
+            return field.isCustom() && field.getType() === 'text' && field.name === name;
         });
     },
 
@@ -170,11 +171,8 @@ Ext.define('IterationRetroApp', {
         e.preventDefault();
         this.setLoading({ msg: 'Creating fields...' });
 
-        Deft.Promise.all(_.compact(_.map(REQUIRED_FIELDS, function(field) {
-            if (!this._fieldExists(field)) {
-                return this._createRequiredField(field);
-            }
-        }, this))).then({
+        var missingFields = _.reject(_.keys(REQUIRED_FIELDS), this._fieldExists, this);
+        Deft.Promise.all(_.map(missingFields, this._createRequiredField, this)).then({
             success: this._requiredFieldsCreated,
             scope: this
         });
@@ -193,7 +191,7 @@ Ext.define('IterationRetroApp', {
             Custom: true,
             Filterable: true,
             Sortable: false,
-            Name: name,
+            Name: REQUIRED_FIELDS[name],
             TypeDefinition: Rally.util.Ref.getRelativeUri(this.models.Iteration.typeDefinition)
         });
         return newField.save();
@@ -217,7 +215,7 @@ Ext.define('IterationRetroApp', {
     _onEditorChange: function(editor) {
         this.iteration.set(editor.fieldName, editor.getValue());
         this.iteration.save({
-            fetch: REQUIRED_FIELDS
+            fetch: _.keys(REQUIRED_FIELDS)
         }).then({
             success: function(iteration) {
                 this.iteration = iteration;
@@ -275,9 +273,6 @@ Ext.define('IterationRetroApp', {
 .actions-panel .x-panel-header-text-container-default {
   font-size: 36px;
   text-transform: none;
-}
-#rich-text-editor-templates-button {
-  display: none;
 }
 
     </style>
