@@ -16,6 +16,6 @@ Enter your pluses, deltas and action items for the last iteration.  All the data
 
 ## Pro Tip
 
-You can even add other apps to the page to seed the retro conversation with some context on how everything went.  Here is an example page which includes the Iteration Summary app and an Iteration Burndown app as well.
+You can even add other apps to the page to seed the retro conversation with some context on how everything went.  Here is an example page which includes the Iteration Summary app and an Iteration Burnup app as well.
 
 ![team retrospective](images/retro-page.png "Team Retrospective Page Screenshot")
