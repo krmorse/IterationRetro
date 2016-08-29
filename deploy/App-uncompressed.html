@@ -46,6 +46,14 @@ Ext.define('IterationRetroApp', {
         }
     },
 
+    onNoAvailableTimeboxes: function() {
+        this.callParent(arguments);
+        var contentContainer = this.down('#content');
+        if (contentContainer) {
+            contentContainer.removeAll();
+        }
+    },
+
     _loadIteration: function() {
         var id = this.getContext().getTimeboxScope().getRecord().getId();
         this.models.Iteration.load(id, {
